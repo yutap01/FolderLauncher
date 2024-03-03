@@ -1,0 +1,6 @@
+FolderLauncher/FolderLauncher/.vs/
+FolderLauncher/FolderLauncher/packages/
+FolderLauncher/FolderLauncher/obj/
+FolderLauncher/FolderLauncher/bin/
+*.suo
+*.vsidx
