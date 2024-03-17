@@ -7,7 +7,7 @@ namespace FolderLauncher.Guardian
     /// <summary>
     /// マウスイベントを監視するクラス
     /// </summary>
-    internal class MouseEventGuardian : IDisposable
+    internal static class MouseEventGuardian
     {
         #region private const
 
@@ -92,22 +92,22 @@ namespace FolderLauncher.Guardian
         /// <summary>
         /// フックプロシージャのハンドル
         /// </summary>
-        private IntPtr hookHandle;
+        private static IntPtr hookHandle;
 
         /// <summary>
         /// フックプロシージャを格納するデリゲート変数
         /// </summary>
-        private MouseHookProcDelegate hookProc;
+        private static MouseHookProcDelegate hookProc;
 
         /// <summary>
         /// ダブルクリック判定者
         /// </summary>
-        private MultiEventChecker doubleClickChecker;
+        private static MultiEventChecker doubleClickChecker;
 
         /// <summary>
         /// 右ダブルクリック判定者
         /// </summary>
-        private MultiEventChecker rightDoubleClickChecker;
+        private static MultiEventChecker rightDoubleClickChecker;
 
         #endregion
 
@@ -116,12 +116,12 @@ namespace FolderLauncher.Guardian
         /// <summary>
         /// デスクトップがダブルクリックされたイベント
         /// </summary>
-        public event EventHandler<DesktopMouseEventArgs>? DesktopDoubleClick = null;
+        public static event EventHandler<DesktopMouseEventArgs>? DesktopDoubleClick = null;
 
         /// <summary>
         /// デスクトップが右ダブルクリックされたイベント
         /// </summary>
-        public event EventHandler<DesktopMouseEventArgs>? DesktopRightDoubleClick = null;
+        public static event EventHandler<DesktopMouseEventArgs>? DesktopRightDoubleClick = null;
 
         #endregion
 
@@ -130,7 +130,7 @@ namespace FolderLauncher.Guardian
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public MouseEventGuardian()
+        static MouseEventGuardian()
         {
             hookProc = MouseHookProc;
             hookHandle = SetWindowsHookEx(WH_MOUSE_LL, hookProc, IntPtr.Zero, 0);
@@ -147,7 +147,7 @@ namespace FolderLauncher.Guardian
         /// <summary>
         /// リソースの破棄
         /// </summary>
-        public void Dispose()
+        public static void Dispose()
         {
             if (hookHandle != IntPtr.Zero)
             {
@@ -167,7 +167,7 @@ namespace FolderLauncher.Guardian
         /// <param name="wParam">イベントのwパラメータ</param>
         /// <param name="lParam">イベントのlパラメータ</param>
         /// <returns>フックプロシージャのハンドル</returns>
-        private IntPtr MouseHookProc(int nCode, IntPtr wParam, IntPtr lParam)
+        private static IntPtr MouseHookProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
             if (nCode == HC_ACTION)
             {
@@ -194,11 +194,11 @@ namespace FolderLauncher.Guardian
         /// <param name="x">x座標</param>
         /// <param name="y">y座標</param>
         /// <returns>デスクトップであり、アイコンがない場合true</returns>
-        private bool IsDesktopSpace(Point pt)
+        private static bool IsDesktopSpace(Point pt)
         {
             IntPtr hWnd = WindowFromPoint(pt);
 
-            if (this.IsDesktopWindow(hWnd))
+            if (IsDesktopWindow(hWnd))
             {
                 int pID = 0;
                 IntPtr hProcess = IntPtr.Zero;
@@ -242,7 +242,7 @@ namespace FolderLauncher.Guardian
         /// </summary>
         /// <param name="hWnd">ウィンドウハンドル</param>
         /// <returns>指定のウィンドウハンドルがデスクトップを指す場合true</returns>
-        private bool IsDesktopWindow(IntPtr hWnd)
+        private static bool IsDesktopWindow(IntPtr hWnd)
         {
             const string targetWindowClassName = "SysListView32";   // デスクトップのウィンドウクラス名
 
@@ -265,7 +265,7 @@ namespace FolderLauncher.Guardian
         /// </summary>
         /// <param name="hWnd">ウィンドウハンドル</param>
         /// <returns>ウィンドウハンドルが指すウィンドウのウィンドウクラス名</returns>
-        private string GetWindowClassName(IntPtr hWnd)
+        private static string GetWindowClassName(IntPtr hWnd)
         {
             const int bufferSize = 255;
             var stringBuilder = new StringBuilder(bufferSize);
@@ -277,7 +277,7 @@ namespace FolderLauncher.Guardian
         /// マウス位置を取得する
         /// </summary>
         /// <returns>現在のマウス位置</returns>
-        private Point GetMousePosition()
+        private static Point GetMousePosition()
         {
             var mousePoint = new Point();
             GetCursorPos(ref mousePoint);
@@ -293,9 +293,9 @@ namespace FolderLauncher.Guardian
         /// </summary>
         /// <param name="x">マウス位置:x</param>
         /// <param name="y">マウス位置:y</param>
-        protected virtual void OnDesktopDoubleClick(int x, int y)
+        private static void OnDesktopDoubleClick(int x, int y)
         {
-            DesktopDoubleClick?.Invoke(this, new DesktopMouseEventArgs(x, y));
+            DesktopDoubleClick?.Invoke(null, new DesktopMouseEventArgs(x, y));
         }
 
         /// <summary>
@@ -303,9 +303,9 @@ namespace FolderLauncher.Guardian
         /// </summary>
         /// <param name="x">マウス位置:x</param>
         /// <param name="y">マウス位置:y</param>
-        protected virtual void OnDesktopRightDoubleClick(int x, int y)
+        private static void OnDesktopRightDoubleClick(int x, int y)
         {
-            DesktopRightDoubleClick?.Invoke(this, new DesktopMouseEventArgs(x, y));
+            DesktopRightDoubleClick?.Invoke(null, new DesktopMouseEventArgs(x, y));
         }
 
         #endregion

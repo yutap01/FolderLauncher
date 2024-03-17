@@ -12,11 +12,6 @@ namespace FolderLauncher
         /// </summary>
         private static NotifyIcon notifyIcon;
 
-        /// <summary>
-        /// マウスイベント監視者
-        /// </summary>
-        private static MouseEventGuardian mouseEventGuardian = new();
-
         #endregion
 
 
@@ -49,7 +44,8 @@ namespace FolderLauncher
                 // アプリケーションの実行
                 Application.Run(mainWindow);
 
-            } finally
+            }
+            finally
             {
                 // 後処理
                 PostProcessing();
@@ -67,7 +63,7 @@ namespace FolderLauncher
             // メインウィンドウの初期化
             mainWindow.Initialize();
 
-            mouseEventGuardian.DesktopDoubleClick += (sender, e) =>
+            MouseEventGuardian.DesktopDoubleClick += (sender, e) =>
             {
                 MessageBox.Show("デスクトップがダブルクリックされました");
             };
