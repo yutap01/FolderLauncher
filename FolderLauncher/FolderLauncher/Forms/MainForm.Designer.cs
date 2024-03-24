@@ -1,6 +1,6 @@
 ﻿namespace FolderLauncher
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -28,10 +28,26 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Text = "Form1";
+            SuspendLayout();
+            // 
+            // MainForm
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.IndianRed;
+            ClientSize = new Size(183, 271);
+            FormBorderStyle = FormBorderStyle.None;
+            KeyPreview = true;
+            MaximizeBox = false;
+            Name = "MainForm";
+            Padding = new Padding(10);
+            ShowIcon = false;
+            StartPosition = FormStartPosition.Manual;
+            Text = "Form1";
+            WindowState = FormWindowState.Minimized;
+            SizeChanged += MainForm_SizeChanged;
+            KeyUp += MainForm_KeyUp;
+            ResumeLayout(false);
         }
 
         #endregion

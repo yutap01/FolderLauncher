@@ -1,5 +1,6 @@
 using FolderLauncher.Guardian;
 using FolderLauncher.Utilities;
+using System.Diagnostics;
 using static FolderLauncher.Define.Define;
 
 namespace FolderLauncher
@@ -15,15 +16,12 @@ namespace FolderLauncher
 
         #endregion
 
-
         /// <summary>
         /// メインエントリポイント
         /// </summary>
         [STAThread]
         static void Main()
          {
-            Log.Error("リリーステスト");
-
             Log.Trace("多重起動チェック");
             if(MultiInvocationGuardian.IsAlreadyRunning())
             {
@@ -37,7 +35,7 @@ namespace FolderLauncher
                 ApplicationConfiguration.Initialize();
 
                 Log.Trace("メインウィンドウの生成");
-                var mainWindow = new Form1();
+                var mainWindow = new MainForm();
 
                 Log.Trace("アプリケーションの初期化");
                 Initialize(mainWindow);
@@ -58,26 +56,28 @@ namespace FolderLauncher
         /// <summary>
         /// 初期化
         /// </summary>
-        /// <param name="mainWindow">メインウィンドウ</param>
-        private static void Initialize(Form1 mainWindow)
+        /// <param name="form">メインウィンドウ</param>
+        private static void Initialize(MainForm form)
         {
             Log.IndentUp();
 
             // TODO:設定の読み込み
 
             Log.Trace("メインウィンドウの初期化");
-            mainWindow.Initialize();
+            form.Initialize();
 
             Log.Trace("デスクトップダブルクリックのフック");
             MouseEventGuardian.DesktopDoubleClick += (sender, e) =>
             {
-                MessageBox.Show("デスクトップがダブルクリックされました");
+                Debug.WriteLine("デスクトップダブルクリック");
+                ToggleMainForm(form);
             };
 
             Log.Trace("キーペア押下のフック");
             KeyboardEventGuardian.KeyPairDown += (sender, e) =>
             {
-                MessageBox.Show("キーペアが押されました");
+                Debug.WriteLine("キーペア押下");
+                ToggleMainForm(form);
             };
 
             Log.IndentDown();
@@ -88,7 +88,7 @@ namespace FolderLauncher
         /// </summary>
         /// <param name="mainWindow">メインウィンドウ</param>
         /// <returns>タスクトレイ上のアイコン</returns>
-        private static NotifyIcon ResidesTaskTray(Form1 mainWindow)
+        private static NotifyIcon ResidesTaskTray(MainForm mainWindow)
         {
             Log.IndentUp();
 
@@ -110,13 +110,65 @@ namespace FolderLauncher
         }
 
         /// <summary>
+        /// 指定のフォームを表示状態にする
+        /// </summary>
+        /// <param name="form">フォーム</param>
+        private static void ShowMainForm(Form form)
+        {
+            // フォームの位置とサイズを決定する
+            // TODO:マルチモニタ対応
+            form.Enabled = false;   //一時的に無効化
+            DetectSize(form);
+            form.Enabled = true;    //有効化
+            
+            form.WindowState = FormWindowState.Normal;
+        }
+
+        /// <summary>
+        /// フォームのサイズを決定する
+        /// </summary>
+        /// <param name="form">フォーム</param>
+        private static void DetectSize(Form form)
+        {
+            // フォームのサイズを決定する
+            var width = Screen.PrimaryScreen.WorkingArea.Width / 2;
+            var height = Screen.PrimaryScreen.WorkingArea.Height;
+            form.Size = new Size(width, height);
+        }
+
+        /// <summary>
+        /// 指定のフォームを非表示状態にする
+        /// </summary>
+        /// <param name="form">フォーム</param>
+        private static void HideMainForm(Form form)
+        {
+            form.WindowState = FormWindowState.Minimized;
+        }
+
+        /// <summary>
+        /// フォームの表示状態を反転する
+        /// </summary>
+        /// <param name="form">フォーム</param>
+        private static void ToggleMainForm(Form form)
+        {
+            if (form.WindowState == FormWindowState.Minimized)
+            {
+                ShowMainForm(form);
+            }
+            else
+            {
+                HideMainForm(form);
+            }
+        }
+
+        /// <summary>
         /// 後処理
         /// </summary>
         private static void PostProcessing()
         {
             Log.IndentUp();
 
-            notifyIcon.Dispose();
+            notifyIcon?.Dispose();
             MultiInvocationGuardian.Dispose();
             Log.IndentDown();
             

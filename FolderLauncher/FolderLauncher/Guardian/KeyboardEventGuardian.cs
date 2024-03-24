@@ -1,6 +1,7 @@
 ﻿using FolderLauncher.Define;
 using FolderLauncher.Model;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.Xml;
 
 namespace FolderLauncher.Guardian
 {
@@ -66,7 +67,7 @@ namespace FolderLauncher.Guardian
         /// <summary>
         /// 有効なキーペアが同時に押されたときに発生するイベント
         /// </summary>
-        public static event EventHandler<KeyPairEventArgs>? KeyPairDown = null;
+        public static event EventHandler<KeyEventArgs>? KeyPairDown = null;
 
         #endregion
 
@@ -81,6 +82,7 @@ namespace FolderLauncher.Guardian
             hookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardHookProc, IntPtr.Zero, 0);
 
             // フック対象のキーペアの設定
+            // TODO:コンストラクタで指定
             keyPairs.Add(new KeyPair(Keys.LShiftKey, Keys.RShiftKey));
             keyPairs.Add(new KeyPair(Keys.LControlKey, Keys.RControlKey));
             keyPairs.Add(new KeyPair(Keys.Left, Keys.Right));
@@ -103,20 +105,23 @@ namespace FolderLauncher.Guardian
         /// <returns>0：メッセージ処理を続行する, 1：メッセージ処理を中止する</returns>
         private static int KeyboardHookProc(int nCode, int wParam, IntPtr lParam)
         {
+
             if (isBothOfKeyPairDown(nCode, wParam, lParam))
             {
-                OnKeyPairDown(pressedKeys);                
+                OnKeyPairDown(pressedKeys);
+                return CallNextHookEx(hookHandle, nCode, wParam, lParam);
             }
+
             return CallNextHookEx(hookHandle, nCode, wParam, lParam);
         }
 
         /// <summary>
-        /// 左右Shiftキーが押されたかどうか
+        /// キーペアが同時押されたかどうか
         /// </summary>
         /// <param name="nCode">フックコード</param>
         /// <param name="wParam">メッセージwParam</param>
         /// <param name="lParam">メッセージlParam</param>
-        /// <returns>キーペアに所属する2つのキーが同時に押されているか否か</returns>
+        /// <returns>キーペアに所属する2つのキーが同時に押された場合true</returns>
         private static bool isBothOfKeyPairDown(int nCode, int wParam, IntPtr lParam)
         {
             //キーストロークアクションでなければ何もしない
@@ -178,7 +183,7 @@ namespace FolderLauncher.Guardian
         /// <param name="keys">押下されたキーの一覧</param>
         private static void OnKeyPairDown(IList<Keys> keys)
         {
-            KeyPairDown?.Invoke(null, new KeyPairEventArgs(keys));
+            KeyPairDown?.Invoke(null, new KeyEventArgs(keys));
         }
 
         #endregion
@@ -198,15 +203,15 @@ namespace FolderLauncher.Guardian
     }
 
     /// <summary>
-    /// キーペア押下イベントのパラメータ
+    /// キーペア同時押下イベントのパラメータ
     /// </summary>
-    public class KeyPairEventArgs : EventArgs
+    public class KeyEventArgs : EventArgs
     {
         /// <summary>
         /// コンストラクタ
         /// </summary>
         /// <param name="keys">押下したキーのリスト</param>
-        public KeyPairEventArgs(IList<Keys> keys)
+        public KeyEventArgs(IList<Keys> keys)
         {
             Keys = keys;
         }
@@ -216,5 +221,4 @@ namespace FolderLauncher.Guardian
         /// </summary>
         public IList<Keys> Keys { get; private set; }
     }
-
 }
