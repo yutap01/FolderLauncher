@@ -1,4 +1,5 @@
 using FolderLauncher.Guardian;
+using FolderLauncher.Utilities;
 using static FolderLauncher.Define.Define;
 
 namespace FolderLauncher
@@ -21,7 +22,9 @@ namespace FolderLauncher
         [STAThread]
         static void Main()
          {
-            // 多重起動チェック
+            Log.Error("リリーステスト");
+
+            Log.Trace("多重起動チェック");
             if(MultiInvocationGuardian.IsAlreadyRunning())
             {
                 MessageBox.Show(errorMessageOfMultipleInvocation);
@@ -30,24 +33,24 @@ namespace FolderLauncher
 
             try
             {
+                Log.Trace("アプリケーション設定の初期化");
                 ApplicationConfiguration.Initialize();
 
-                // メインウィンドウ
+                Log.Trace("メインウィンドウの生成");
                 var mainWindow = new Form1();
 
-                // アプリケーションの初期化
+                Log.Trace("アプリケーションの初期化");
                 Initialize(mainWindow);
 
-                // タスクトレイに常駐する
+                Log.Trace("アプリケーションをタスクトレイへ常駐させる");
                 ResidesTaskTray(mainWindow);
 
-                // アプリケーションの実行
+                Log.Trace("アプリケーションの実行");
                 Application.Run(mainWindow);
-
             }
             finally
             {
-                // 後処理
+                Log.Trace("後処理");
                 PostProcessing();
             }
         }
@@ -58,21 +61,26 @@ namespace FolderLauncher
         /// <param name="mainWindow">メインウィンドウ</param>
         private static void Initialize(Form1 mainWindow)
         {
+            Log.IndentUp();
+
             // TODO:設定の読み込み
 
-            // メインウィンドウの初期化
+            Log.Trace("メインウィンドウの初期化");
             mainWindow.Initialize();
 
+            Log.Trace("デスクトップダブルクリックのフック");
             MouseEventGuardian.DesktopDoubleClick += (sender, e) =>
             {
                 MessageBox.Show("デスクトップがダブルクリックされました");
             };
 
+            Log.Trace("キーペア押下のフック");
             KeyboardEventGuardian.KeyPairDown += (sender, e) =>
             {
                 MessageBox.Show("キーペアが押されました");
             };
 
+            Log.IndentDown();
         }
 
         /// <summary>
@@ -82,6 +90,8 @@ namespace FolderLauncher
         /// <returns>タスクトレイ上のアイコン</returns>
         private static NotifyIcon ResidesTaskTray(Form1 mainWindow)
         {
+            Log.IndentUp();
+
             var notifyIcon = new NotifyIcon();
             notifyIcon.Icon = SystemIcons.Application;
             notifyIcon.Text = applicationName;
@@ -95,6 +105,7 @@ namespace FolderLauncher
                 mainWindow.WindowState = FormWindowState.Normal;
             };
 
+            Log.IndentDown();
             return notifyIcon;
         }
 
@@ -103,8 +114,13 @@ namespace FolderLauncher
         /// </summary>
         private static void PostProcessing()
         {
+            Log.IndentUp();
+
             notifyIcon.Dispose();
             MultiInvocationGuardian.Dispose();
+            Log.IndentDown();
+            
+            Log.Shutdown();
         }
     }
 }
